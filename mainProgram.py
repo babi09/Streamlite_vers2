@@ -16,8 +16,9 @@ import funcs_ha_use
 from PIL import Image
 from nibabel import FileHolder, Nifti1Image
 from io import BytesIO
-
-
+import pyvista as pv
+from skimage import measure
+import numpy as np
 # streamlit interface
 
 st.sidebar.title('Organ Detection and Segmentation')
@@ -117,16 +118,34 @@ if uploaded_nii_file is not None:
 # select organ to segment
 #     option = st.sidebar.selectbox('Select organ', ('Kidneys', 'Liver', 'Pancreas'))
 #     segmentation = st.sidebar.button('Perform Segmentation')
-    option = st.sidebar.radio('Select Organ to segment', ['None', 'Kidney', 'Liver', 'Pancreas', 'Psoas Muscles'], index=0)
+    option = st.sidebar.radio('Select Organ to segment', ['None', 'Kidney', 'Liver', 'Pancreas', 'Psoas'], index=0)
 
     if option == 'Liver':
         # load segmentation model
         # perform segmentation
-        maskSegment = modelDeployment.runDeepSegmentationModel('Liver', img)
+        maskSegment, plotMask = modelDeployment.runDeepSegmentationModel('Liver', img)
         # plot segmentation mask
-        fig, ax = funcs_ha_use.plotMask(fig, ax, img, maskSegment, slice_i1, 'AX')
-        fig1, ax1 = funcs_ha_use.plotMask(fig1, ax1, img, maskSegment, slice_i2, 'CR')
-        fig2, ax2 = funcs_ha_use.plotMask(fig2, ax2, img, maskSegment, slice_i3, 'SG')
+        fig, ax = funcs_ha_use.plotMask(fig, ax, img, maskSegment, slice_i1, 'AX', 'Liver')
+        fig1, ax1 = funcs_ha_use.plotMask(fig1, ax1, img, maskSegment, slice_i2, 'CR', 'Liver')
+        fig2, ax2 = funcs_ha_use.plotMask(fig2, ax2, img, maskSegment, slice_i3, 'SG', 'Liver')
+
+    if option == 'Pancreas':
+        # load segmentation model
+        # perform segmentation
+        maskSegment = modelDeployment.runDeepSegmentationModel('Pancreas', img)
+        # plot segmentation mask
+        fig, ax = funcs_ha_use.plotMask(fig, ax, img, maskSegment, slice_i1, 'AX', 'Pancreas')
+        fig1, ax1 = funcs_ha_use.plotMask(fig1, ax1, img, maskSegment, slice_i2, 'CR', 'Pancreas')
+        fig2, ax2 = funcs_ha_use.plotMask(fig2, ax2, img, maskSegment, slice_i3, 'SG', 'Pancreas')
+
+    if option == 'Psoas':
+        # load segmentation model
+        # perform segmentation
+        maskSegment = modelDeployment.runDeepSegmentationModel('Psoas', img)
+        # plot segmentation mask
+        fig, ax = funcs_ha_use.plotMask(fig, ax, img, maskSegment, slice_i1, 'AX', 'Psoas')
+        fig1, ax1 = funcs_ha_use.plotMask(fig1, ax1, img, maskSegment, slice_i2, 'CR', 'Psoas')
+        fig2, ax2 = funcs_ha_use.plotMask(fig2, ax2, img, maskSegment, slice_i3, 'SG', 'Psoas')
 
 
     # plot the three view (axial, sagittal and coronal)
@@ -137,4 +156,35 @@ if uploaded_nii_file is not None:
     plot = col1.pyplot(fig)
     plot = col2.pyplot(fig1)
     plot = col3.pyplot(fig2)
+
+    if st.sidebar.button('3D visualisation'):
+        verts, faces, normals, values = measure.marching_cubes_lewiner(plotMask, 0.0)
+
+        cloud = pv.PolyData(verts).clean()
+
+        surf = cloud.delaunay_3d(alpha=3)
+        shell = surf.extract_geometry().triangulate()
+        #decimated = shell.decimate(0.4).extract_surface().clean()
+        #decimated.compute_normals(cell_normals=True, point_normals=False, inplace=True)
+
+        #centers = decimated.cell_centers()
+       # centers.translate(decimated['Normals'] * 10.0)
+
+        p = pv.Plotter(notebook=False)
+        p.add_mesh(shell, color="r")
+        p.link_views()
+        p.show()
+
+        # Make the xyz points
+        # theta = np.linspace(-10 * np.pi, 10 * np.pi, 100)
+        # z = np.linspace(-2, 2, 100)
+        # r = z ** 2 + 1
+        # x = r * np.sin(theta)
+        # y = r * np.cos(theta)
+        # points = np.column_stack((x, y, z))
+        #
+        # spline = pv.Spline(points, 500).tube(radius=0.1)
+        # spline.plot(scalars='arc_length', show_scalar_bar=False)
+
+
 
