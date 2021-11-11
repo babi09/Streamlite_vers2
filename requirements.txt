@@ -12,3 +12,6 @@ opencv-python-headless
 vtk
 pyvista
 PyQt5
+ffmpeg
+libsm6
+libxext6
