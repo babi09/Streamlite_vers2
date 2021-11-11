@@ -11,4 +11,4 @@ sklearn
 opencv-python-headless
 vtk
 pyvista
-libgl1-mesa-glx
+PyQt5
