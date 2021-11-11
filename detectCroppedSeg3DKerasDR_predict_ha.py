@@ -73,19 +73,8 @@ def singlePatientDetection(pName, baseline, params, organTarget):
     # perform PCA to numPC 
     numPC = 5; #50
     pca = PCA(n_components=numPC);
-    print(vol4D0.shape)
-    #vol4D0 = vol4D0[0::2,0::2,:,:]
 
-    print(vol4D0.shape)
     vol4Dvecs = np.reshape(vol4D0, (vol4D0.shape[0] * vol4D0.shape[1] * vol4D0.shape[2], vol4D0.shape[3]));
-    # #incremental PCA to avoid memory issues
-    print(vol4Dvecs.shape)
-
-
-    #ipca = IncrementalPCA(copy=False, n_components=numPC,batch_size=25)
-    #PCs = ipca.fit_transform(vol4Dvecs)
-
-
 
     PCs=pca.fit_transform(vol4Dvecs);
     vol4Dpcs=np.reshape(PCs, (vol4D0.shape[0],vol4D0.shape[1],vol4D0.shape[2], numPC));
@@ -127,11 +116,11 @@ def singlePatientDetection(pName, baseline, params, organTarget):
 
     # select organ to segment
     if organTarget == 'Liver':
-        model.load_weights('detect3D_30000.h5');
-    # elif organTarget == 'Pancreas':
-    #     #model for pancreas
-    # elif organTarget == 'Psoas':
-    #     #model for Psoas
+        model.load_weights('.\\models\\detect3D_30000_Liver.h5');
+    elif organTarget == 'Pancreas':
+        model.load_weights('.\\models\\detect3D_50000_Pancreas.h5')
+    elif organTarget == 'Psoas':
+        model.load_weights('.\\models\\detect3D_32755_Psoas.h5')
     # elif organTarget == 'Kidneys':
     #     #model for kidneys;
 
@@ -181,12 +170,22 @@ def singlePatientDetection(pName, baseline, params, organTarget):
 
     #full kidney mask
     maskDetect = KMR + KML;
+    print ('maskDetect:')
+    print (maskDetect.shape)
+
     
     ### generate kidneys bounding box based on prediction
     boxDetect = [];
 
     aL=np.nonzero(KML==2);
     aR=np.nonzero(KMR==1);
+
+    # if aL.size()==0
+    # print('aL')
+    # print(aL[0].size)
+    # print(min(aL[0]))
+    # print(min(aL[1]))
+    # print(min(aL[2]))
 
     if aL[0].size!=0:
         boxL=np.array([int((min(aL[0])+max(aL[0]))/2),int((min(aL[1])+max(aL[1]))/2),int((min(aL[2])+max(aL[2]))/2),\
@@ -304,7 +303,8 @@ def singlePatientSegmentation(params, pName, maskDetect, boxDetect, kidneyNone, 
         croppedData4DL=vol4D0[int(Box[1,0]-int(Box[1,3]/2)+exv):int(Box[1,0]+int(Box[1,3]/2)-exv),\
                                 int(Box[1,1]-int(Box[1,4]/2)+exv):int(Box[1,1]+int(Box[1,4]/2)-exv),\
                                 int(Box[1,2]-int(Box[1,5]/2)+exv):int(Box[1,2]+int(Box[1,5]/2)-exv),:];  
-            
+        print('cropdata:')
+        print(croppedData4DL.shape)
         croppedData4DL_pcs=zoom(croppedData4DL_pcs,(dx/np.size(croppedData4DL_pcs,0),dy/np.size(croppedData4DL_pcs,1),dz/np.size(croppedData4DL_pcs,2),1),order=0);
         croppedData4DL=zoom(croppedData4DL,(dx/np.size(croppedData4DL,0),dy/np.size(croppedData4DL,1),dz/np.size(croppedData4DL,2),1),order=0);
         
@@ -326,7 +326,7 @@ def singlePatientSegmentation(params, pName, maskDetect, boxDetect, kidneyNone, 
     DataCroppedTest[2*sc:2*sc+2,:,:,:,:]=dpcs;
     
     #address to segmentation model
-    address = '/static/Liver/';
+    #address = '/static/Liver/';
     #address = '/fileserver/abd/github_ha/deepLearningModels/segment_ha_gh/NettNet_time5_pcUsed1_tpUsed50_DR0_testSet2/';
     
     
@@ -344,10 +344,14 @@ def singlePatientSegmentation(params, pName, maskDetect, boxDetect, kidneyNone, 
         model = get_denseNet(dx,dz,n_channels,n_classes,deepRed,0);
     
     #load segmentation model weights
-    selectedEpoch=params['selectedEpochSegment'];
+    #selectedEpoch=params['selectedEpochSegment'];
     # select organ to segment
     if organTarget == 'Liver':
-        model.load_weights('croppedSeg3D_31735.h5');
+        model.load_weights('.\\models\\croppedSeg3D_31735_Liver.h5');
+    elif organTarget == 'Pancreas':
+        model.load_weights('.\\models\\croppedSeg3D_84000_Pancreas.h5');
+    elif organTarget == 'Psoas':
+        model.load_weights('.\\models\\croppedSeg3D_96000_Psoas.h5');
 
     # perform prediction
     cropped_mask_test = model.predict(DataCroppedTest, verbose=1)
@@ -418,7 +422,7 @@ def singlePatientSegmentation(params, pName, maskDetect, boxDetect, kidneyNone, 
     # write kidney segmentation masks to file
     #funcs_ha_use.writeMasks(pName,reconMethod,Masks2Save,1);
     
-    return Masks2Save
+    return Masks2Save, maskSegment
     
 # # path to .xls spreadsheet that contains temporal information about each
 # # test subject (pName)
