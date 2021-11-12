@@ -116,11 +116,11 @@ def singlePatientDetection(pName, baseline, params, organTarget):
 
     # select organ to segment
     if organTarget == 'Liver':
-        model.load_weights('.\\models\\detect3D_30000_Liver.h5');
+        model.load_weights('detect3D_30000_Liver.h5');
     elif organTarget == 'Pancreas':
-        model.load_weights('.\\models\\detect3D_50000_Pancreas.h5')
+        model.load_weights('detect3D_50000_Pancreas.h5')
     elif organTarget == 'Psoas':
-        model.load_weights('.\\models\\detect3D_32755_Psoas.h5')
+        model.load_weights('detect3D_32755_Psoas.h5')
     # elif organTarget == 'Kidneys':
     #     #model for kidneys;
 
@@ -347,11 +347,11 @@ def singlePatientSegmentation(params, pName, maskDetect, boxDetect, kidneyNone, 
     #selectedEpoch=params['selectedEpochSegment'];
     # select organ to segment
     if organTarget == 'Liver':
-        model.load_weights('.\\models\\croppedSeg3D_31735_Liver.h5');
+        model.load_weights('croppedSeg3D_31735_Liver.h5');
     elif organTarget == 'Pancreas':
-        model.load_weights('.\\models\\croppedSeg3D_84000_Pancreas.h5');
+        model.load_weights('croppedSeg3D_84000_Pancreas.h5');
     elif organTarget == 'Psoas':
-        model.load_weights('.\\models\\croppedSeg3D_96000_Psoas.h5');
+        model.load_weights('croppedSeg3D_96000_Psoas.h5');
 
     # perform prediction
     cropped_mask_test = model.predict(DataCroppedTest, verbose=1)
