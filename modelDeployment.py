@@ -16,8 +16,8 @@ def runDeepSegmentationModel(organTarget, img):
 
     params['networkToUseDetect'] = 'rbUnet'  # 'denseNet'; #'tNet'; #'Unet' #meshNet
     params['networkToUseSegment'] = 'tNet'  # 'denseNet'; #'rbUnet' # 'Unet' #meshNet
-    #params['selectedEpochDetect'] = '30000';
-    #params['selectedEpochSegment'] = '31735';
+    params['selectedEpochDetect'] = '30000';
+    params['selectedEpochSegment'] = '31735';
 
     if params['PcUsed'] == 1:
         tDim = 5;
@@ -26,31 +26,10 @@ def runDeepSegmentationModel(organTarget, img):
     #pName = imagesAddress
     baseline = '1';
 
-    if organTarget == 'Liver':
-        params['selectedEpochDetect'] = '30000';
-        params['selectedEpochSegment'] = '31735';
-        # call the model to detect and segment and return the mask
-        maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs, zDimOri = detectCroppedSeg3DKerasDR_predict_ha.singlePatientDetection(img, int(baseline),
+    # call the model to detect and segment and return the mask
+    maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs, zDimOri = detectCroppedSeg3DKerasDR_predict_ha.singlePatientDetection(img, int(baseline),
                                                                                               params, 'Liver');
-        maskSegment, plotMask = detectCroppedSeg3DKerasDR_predict_ha.singlePatientSegmentation(params, img, maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs,
+    maskSegment = detectCroppedSeg3DKerasDR_predict_ha.singlePatientSegmentation(params, img, maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs,
                                                 zDimOri, 'Liver');
 
-    if organTarget == 'Pancreas':
-        params['selectedEpochDetect'] = '50000';
-        params['selectedEpochSegment'] = '84000';
-        # call the model to detect and segment and return the mask
-        maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs, zDimOri = detectCroppedSeg3DKerasDR_predict_ha.singlePatientDetection(img, int(baseline),
-                                                                                              params, 'Pancreas');
-        maskSegment, plotMask = detectCroppedSeg3DKerasDR_predict_ha.singlePatientSegmentation(params, img, maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs,
-                                                zDimOri, 'Pancreas');
-
-    if organTarget == 'Psoas':
-        params['selectedEpochDetect'] = '30000';
-        params['selectedEpochSegment'] = '31735';
-        # call the model to detect and segment and return the mask
-        maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs, zDimOri = detectCroppedSeg3DKerasDR_predict_ha.singlePatientDetection(img, int(baseline),
-                                                                                              params, 'Psoas');
-        maskSegment, plotMask = detectCroppedSeg3DKerasDR_predict_ha.singlePatientSegmentation(params, img, maskDetect, boxDetect, kidneyNone, vol4D0, vol4Dpcs,
-                                                zDimOri, 'Psoas');
-
-    return maskSegment, plotMask
+    return maskSegment
